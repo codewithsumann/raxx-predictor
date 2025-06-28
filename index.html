@@ -1,298 +1,319 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100">
+<html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raxx Predictor</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        raxxRed: '#d4002c',
-                        raxxGreen: '#00aa55',
-                        raxxViolet: '#6a0dad',
-                    }
-                }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raxx Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            violet: {
+              500: '#8b5cf6',
+              600: '#7c3aed',
+            },
+            red: {
+              500: '#ef4444',
+              600: '#dc2626',
+            },
+            green: {
+              500: '#10b981',
+              600: '#059669',
             }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          }
         }
-    </script>
+      }
+    }
+  </script>
+  <style>
+    .color-green { background-color: #10b981; }
+    .color-red { background-color: #ef4444; }
+    .color-violet { background-color: #8b5cf6; }
+    .dark .glow {
+      box-shadow: 0 0 10px 2px;
+    }
+  </style>
 </head>
-<body class="h-full">
-    <div class="min-h-full">
-        <div class="bg-indigo-600 pb-32 dark:bg-gray-900">
-            <header class="py-10">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                    <h1 class="text-3xl font-bold text-white">Raxx Predictor</h1>
-                    <button id="theme-toggle" class="p-2 rounded-full bg-indigo-700 hover:bg-indigo-800 dark:bg-gray-800 dark:hover:bg-gray-700">
-                        <svg id="sun-icon" class="w-6 h-6 text-white dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <svg id="moon-icon" class="w-6 h-6 text-white hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                        </svg>
-                    </button>
-                </div>
-            </header>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+  <div class="container mx-auto px-4 py-8 max-w-3xl">
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Raxx Predictor</h1>
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </button>
+    </header>
 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8 dark:bg-gray-800">
-                    <div class="p-6">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Enter Last 5 Numbers</h2>
-                        <div class="flex flex-col md:flex-row gap-4 mb-6">
-                            <input type="text" id="number-input" placeholder="e.g. 1,3,5,2,4" 
-                                   class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <button id="predict-btn" class="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
-                                Predict Next
-                            </button>
-                        </div>
-                        
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Recent Inputs</h3>
-                            <div id="recent-numbers" class="flex flex-wrap gap-2 min-h-12">
-                                <div class="px-4 py-2 bg-gray-200 rounded-lg dark:bg-gray-700 text-gray-800 dark:text-gray-200 opacity-50">No inputs yet</div>
-                            </div>
-                        </div>
-                        
-                        <div class="p-6 bg-gray-100 rounded-lg dark:bg-gray-700 mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Prediction</h3>
-                            <div id="prediction-result" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-300 dark:border-gray-600">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Number</span>
-                                    <span id="predicted-number" class="text-4xl font-bold text-gray-900 dark:text-white">-</span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-300 dark:border-gray-600">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Color</span>
-                                    <span id="predicted-color" class="text-4xl font-bold">-</span>
-                                </div>
-                                <div class="flex flex-col items-center justify-center p-4 rounded-lg border border-gray-300 dark:border-gray-600">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">Size</span>
-                                    <span id="predicted-size" class="text-4xl font-bold text-gray-900 dark:text-white">-</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="prediction-history" class="hidden">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Prediction History</h3>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead class="bg-gray-50 dark:bg-gray-700">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Time</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Input</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Prediction</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="history-body" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                        <!-- Filled by JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Main Content -->
+    <main>
+      <!-- Input Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-all duration-300">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Enter Last 5 Numbers</h2>
+        <div class="flex flex-col space-y-4">
+          <input 
+            type="text" 
+            id="numberInput" 
+            placeholder="e.g. 1,3,5,2,4" 
+            class="px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          >
+          <button 
+            id="predictBtn" 
+            class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+          >
+            Predict Next Number
+          </button>
         </div>
-    </div>
+      </div>
 
-    <script>
-        // Theme toggle functionality
-        document.getElementById('theme-toggle').addEventListener('click', function() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-            document.getElementById('sun-icon').classList.toggle('hidden');
-            document.getElementById('moon-icon').classList.toggle('hidden');
-        });
+      <!-- Prediction Display -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-all duration-300 animate-fade-in" id="predictionCard" style="display: none;">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-6">Prediction Result</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Color Prediction -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Color</h3>
+            <div class="flex items-center space-x-3">
+              <div id="colorIndicator" class="h-10 w-10 rounded-full"></div>
+              <span id="colorValue" class="text-lg font-semibold text-gray-800 dark:text-white">-</span>
+            </div>
+          </div>
+          
+          <!-- Size Prediction -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Size</h3>
+            <span id="sizeValue" class="text-lg font-semibold text-gray-800 dark:text-white">-</span>
+          </div>
+          
+          <!-- Number Prediction -->
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Suggested Number</h3>
+            <div id="numberValue" class="text-3xl font-bold text-gray-800 dark:text-white text-center">-</div>
+          </div>
+        </div>
+      </div>
 
-        // Initialize dark mode if previously set
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.classList.add('dark');
-            document.getElementById('sun-icon').classList.add('hidden');
-            document.getElementById('moon-icon').classList.remove('hidden');
-        }
+      <!-- History Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Prediction History</h2>
+          <button id="clearHistory" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Clear</button>
+        </div>
+        
+        <div class="space-y-3" id="historyContainer">
+          <!-- History items will be added here -->
+          <div class="text-center py-4 text-gray-500 dark:text-gray-400" id="emptyHistory">
+            No predictions yet.
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
-        // Prediction logic
-        const numberInput = document.getElementById('number-input');
-        const predictBtn = document.getElementById('predict-btn');
-        const recentNumbers = document.getElementById('recent-numbers');
-        const predictedNumber = document.getElementById('predicted-number');
-        const predictedColor = document.getElementById('predicted-color');
-        const predictedSize = document.getElementById('predicted-size');
-        const predictionHistory = document.getElementById('prediction-history');
-        const historyBody = document.getElementById('history-body');
+  <script>
+    // Game definitions
+    const colorMap = {
+      0: 'violet',
+      1: 'green',
+      2: 'red',
+      3: 'green',
+      4: 'red',
+      5: 'violet',
+      6: 'red',
+      7: 'green',
+      8: 'red',
+      9: 'violet'
+    };
 
-        let inputsHistory = JSON.parse(localStorage.getItem('raxx-inputs')) || [];
-        let predictionsHistory = JSON.parse(localStorage.getItem('raxx-predictions')) || [];
+    const sizeMap = {
+      0: 'big',
+      1: 'small',
+      2: 'small',
+      3: 'small',
+      4: 'big',
+      5: 'big',
+      6: 'big',
+      7: 'small',
+      8: 'big',
+      9: 'small'
+    };
 
-        // Update UI on load
-        updateRecentNumbers();
-        updateHistoryTable();
+    // DOM Elements
+    const themeToggle = document.getElementById('themeToggle');
+    const numberInput = document.getElementById('numberInput');
+    const predictBtn = document.getElementById('predictBtn');
+    const predictionCard = document.getElementById('predictionCard');
+    const colorIndicator = document.getElementById('colorIndicator');
+    const colorValue = document.getElementById('colorValue');
+    const sizeValue = document.getElementById('sizeValue');
+    const numberValue = document.getElementById('numberValue');
+    const historyContainer = document.getElementById('historyContainer');
+    const emptyHistory = document.getElementById('emptyHistory');
+    const clearHistory = document.getElementById('clearHistory');
 
-        predictBtn.addEventListener('click', () => {
-            const inputStr = numberInput.value.trim();
-            if (!validateInput(inputStr)) {
-                alert('Please enter 5 numbers between 0-9, comma-separated (e.g. "1,3,5,2,4")');
-                return;
-            }
+    // State
+    let predictionsHistory = JSON.parse(localStorage.getItem('raxxPredictions')) || [];
 
-            const numbers = inputStr.split(',').map(num => parseInt(num.trim(), 10));
-            const prediction = makePrediction(numbers);
-            displayPrediction(prediction);
+    // Initialize
+    renderHistory();
 
-            // Save to history
-            inputsHistory.push(numbers);
-            predictionsHistory.push({
-                timestamp: new Date().toLocaleString(),
-                input: numbers.join(','),
-                prediction
-            });
+    // Event Listeners
+    themeToggle.addEventListener('click', toggleTheme);
+    predictBtn.addEventListener('click', handlePrediction);
+    clearHistory.addEventListener('click', clearHistoryItems);
+    numberInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handlePrediction();
+    });
 
-            // Store in localStorage
-            localStorage.setItem('raxx-inputs', JSON.stringify(inputsHistory));
-            localStorage.setItem('raxx-predictions', JSON.stringify(predictionsHistory));
+    // Functions
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+    }
 
-            // Update UI
-            updateRecentNumbers();
-            updateHistoryTable();
-            predictionHistory.classList.remove('hidden');
-        });
+    function handlePrediction() {
+      const input = numberInput.value.trim();
+      if (!input) {
+        alert('Please enter 5 comma-separated numbers (e.g., "1,3,5,2,4")');
+        return;
+      }
 
-        function validateInput(input) {
-            const nums = input.split(',').map(num => num.trim());
-            if (nums.length !== 5) return false;
-            
-            return nums.every(num => {
-                const n = parseInt(num, 10);
-                return !isNaN(n) && n >= 0 && n <= 9;
-            });
-        }
+      const numbers = input.split(',').map(num => parseInt(num.trim(), 10));
+      if (numbers.length !== 5 || numbers.some(isNaN) || numbers.some(n => n < 0 || n > 9)) {
+        alert('Please enter exactly 5 valid numbers between 0 and 9, comma-separated');
+        return;
+      }
 
-        function makePrediction(numbers) {
-            // Simple prediction logic - can be enhanced
-            const lastNumber = numbers[numbers.length - 1];
-            
-            // Color prediction (alternating between common colors)
-            let color;
-            const colorCount = {
-                red: numbers.filter(n => [1, 2, 7, 8, 13].includes(n)).length,
-                green: numbers.filter(n => [0, 3, 4, 5, 6, 9].includes(n)).length
-            };
+      const prediction = predictNextNumber(numbers);
+      showPrediction(prediction);
+      saveToHistory(prediction);
+    }
 
-            if (colorCount.red > colorCount.green) {
-                color = Math.random() > 0.3 ? 'Green' : 'Violet';
-            } else {
-                color = Math.random() > 0.7 ? 'Red' : Math.random() > 0.5 ? 'Violet' : 'Green';
-            }
+    function predictNextNumber(numbers) {
+      // Analyze last 5 numbers
+      const lastFive = numbers.map(n => ({
+        number: n,
+        color: colorMap[n],
+        size: sizeMap[n]
+      }));
 
-            // Number prediction based on recent trends
-            let nextNumber;
-            const avg = numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
-            
-            if (numbers.length >= 3 && numbers[numbers.length - 1] === numbers[numbers.length - 2]) {
-                // If streak, continue the streak with 40% chance
-                nextNumber = Math.random() < 0.4 ? lastNumber : Math.floor(Math.random() * 10);
-            } else {
-                // Otherwise, predict based on average
-                nextNumber = Math.round(
-                    Math.max(0, Math.min(9, 
-                    avg + (Math.random() * 2 - 1) * 2))
-                );
-            }
+      // Color prediction (reverse if 3+ of same color)
+      const colorCounts = lastFive.reduce((acc, curr) => {
+        acc[curr.color] = (acc[curr.color] || 0) + 1;
+        return acc;
+      }, {});
 
-            // Size prediction (Big: 5-9, Small: 0-4)
-            const size = nextNumber >= 5 ? 'Big' : 'Small';
+      let predictedColor;
+      if (Object.values(colorCounts).some(count => count >= 3)) {
+        // Reverse the most frequent color
+        const mostFrequentColor = Object.keys(colorCounts).reduce((a, b) => 
+          colorCounts[a] > colorCounts[b] ? a : b
+        );
+        predictedColor = mostFrequentColor === 'green' ? 'red' : 
+                         mostFrequentColor === 'red' ? 'violet' : 'green';
+      } else {
+        // Default to trend continuation (most recent color)
+        predictedColor = lastFive[lastFive.length - 1].color;
+      }
 
-            return {
-                number: nextNumber,
-                color,
-                size
-            };
-        }
+      // Size prediction (reverse dominant size)
+      const sizeCounts = lastFive.reduce((acc, curr) => {
+        acc[curr.size] = (acc[curr.size] || 0) + 1;
+        return acc;
+      }, {});
 
-        function displayPrediction(prediction) {
-            predictedNumber.textContent = prediction.number;
-            
-            // Set color
-            predictedColor.textContent = prediction.color;
-            predictedColor.className = 'text-4xl font-bold'; // Reset classes
-            switch(prediction.color) {
-                case 'Red':
-                    predictedColor.classList.add('text-raxxRed');
-                    break;
-                case 'Green':
-                    predictedColor.classList.add('text-raxxGreen');
-                    break;
-                case 'Violet':
-                    predictedColor.classList.add('text-raxxViolet');
-                    break;
-            }
+      const dominantSize = sizeCounts.big > sizeCounts.small ? 'big' : 'small';
+      const predictedSize = dominantSize === 'big' ? 'small' : 'big';
 
-            predictedSize.textContent = prediction.size;
-            
-            // Add animation class
-            const resultElements = [
-                predictedNumber,
-                predictedColor,
-                predictedSize
-            ];
-            
-            resultElements.forEach(el => {
-                el.classList.add('animate-pulse');
-                setTimeout(() => {
-                    el.classList.remove('animate-pulse');
-                }, 1000);
-            });
-        }
+      // Number prediction (random from numbers matching predicted color and size)
+      const possibleNumbers = [0,1,2,3,4,5,6,7,8,9].filter(num => 
+        colorMap[num] === predictedColor && sizeMap[num] === predictedSize
+      );
 
-        function updateRecentNumbers() {
-            recentNumbers.innerHTML = '';
-            
-            if (inputsHistory.length === 0) {
-                recentNumbers.innerHTML = '<div class="px-4 py-2 bg-gray-200 rounded-lg dark:bg-gray-700 text-gray-800 dark:text-gray-200 opacity-50">No inputs yet</div>';
-                return;
-            }
-            
-            const lastFiveNumbers = inputsHistory.slice(-5).reverse();
-            lastFiveNumbers.forEach(nums => {
-                const numsStr = nums.join(', ');
-                const element = document.createElement('div');
-                element.className = 'px-4 py-2 bg-gray-200 rounded-lg dark:bg-gray-700 text-gray-800 dark:text-gray-200';
-                element.textContent = numsStr;
-                recentNumbers.appendChild(element);
-            });
-        }
+      const predictedNumber = possibleNumbers.length > 0 
+        ? possibleNumbers[Math.floor(Math.random() * possibleNumbers.length)]
+        : Math.floor(Math.random() * 10); // fallback
 
-        function updateHistoryTable() {
-            if (predictionsHistory.length === 0) return;
-            
-            historyBody.innerHTML = '';
-            
-            predictionsHistory.reverse().forEach(prediction => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
-                
-                const timeCell = document.createElement('td');
-                timeCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200';
-                timeCell.textContent = prediction.timestamp;
-                
-                const inputCell = document.createElement('td');
-                inputCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200';
-                inputCell.textContent = prediction.input;
-                
-                const predictionCell = document.createElement('td');
-                predictionCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200';
-                predictionCell.textContent = `${prediction.prediction.number} (${prediction.prediction.color}, ${prediction.prediction.size})`;
-                
-                row.appendChild(timeCell);
-                row.appendChild(inputCell);
-                row.appendChild(predictionCell);
-                
-                historyBody.appendChild(row);
-            });
-        }
-    </script>
+      return {
+        number: predictedNumber,
+        color: predictedColor,
+        size: predictedSize,
+        timestamp: new Date().toLocaleString()
+      };
+    }
+
+    function showPrediction(prediction) {
+      predictionCard.style.display = 'block';
+      
+      // Color
+      colorIndicator.className = `h-10 w-10 rounded-full glow color-${prediction.color}`;
+      colorValue.textContent = prediction.color.charAt(0).toUpperCase() + prediction.color.slice(1);
+      
+      // Size
+      sizeValue.textContent = prediction.size.charAt(0).toUpperCase() + prediction.size.slice(1);
+      
+      // Number
+      numberValue.textContent = prediction.number;
+      numberValue.className = `text-3xl font-bold text-center 
+        ${prediction.color === 'green' ? 'text-green-600' : 
+          prediction.color === 'red' ? 'text-red-600' : 
+          'text-violet-600'}`;
+
+      // Animation
+      predictionCard.style.animation = 'fade-in 0.5s ease-out forwards';
+    }
+
+    function saveToHistory(prediction) {
+      predictionsHistory.unshift(prediction);
+      if (predictionsHistory.length > 10) {
+        predictionsHistory = predictionsHistory.slice(0, 10);
+      }
+      localStorage.setItem('raxxPredictions', JSON.stringify(predictionsHistory));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (predictionsHistory.length === 0) {
+        emptyHistory.style.display = 'block';
+        return;
+      }
+
+      emptyHistory.style.display = 'none';
+      historyContainer.innerHTML = predictionsHistory.map((pred, idx) => `
+        <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg animate-fade-in">
+          <div class="flex items-center space-x-3">
+            <div class="h-6 w-6 rounded-full ${`color-${pred.color}`} ${pred.color === 'violet' ? 'glow' : ''}"></div>
+            <span class="font-medium text-gray-800 dark:text-white">${pred.number}</span>
+          </div>
+          <div class="flex items-center space-x-4 text-sm">
+            <span class="text-gray-500 dark:text-gray-300 capitalize">${pred.size}</span>
+            <span class="text-gray-400 dark:text-gray-400 text-xs">${pred.timestamp}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearHistoryItems() {
+      predictionsHistory = [];
+      localStorage.removeItem('raxxPredictions');
+      renderHistory();
+      emptyHistory.style.display = 'block';
+    }
+  </script>
 </body>
 </html>
 
