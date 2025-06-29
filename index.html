@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raxx Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white min-h-screen">
+  <div class="max-w-xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-6">🔮 Raxx Predictor</h1>
+    <div class="mb-4">
+      <input id="inputNumbers" type="text" placeholder="Enter last 5 numbers (e.g. 1,3,5,2,4)"
+        class="w-full p-3 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-black dark:text-white" />
+    </div>
+    <button onclick="handlePrediction()"
+      class="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700">Predict</button>
+    
+    <div id="result" class="mt-8 hidden">
+      <h2 class="text-xl font-semibold mb-4">Prediction Result</h2>
+      <p><strong>Color:</strong> <span id="predColor"></span></p>
+      <p><strong>Size:</strong> <span id="predSize"></span></p>
+      <p><strong>Number:</strong> <span id="predNumber"></span></p>
+    </div>
+
+    <div class="mt-10">
+      <h2 class="text-xl font-semibold mb-2">📜 History</h2>
+      <div id="historyList" class="space-y-2 text-sm"></div>
+    </div>
+  </div>
+
+  <script>
+    function getColor(num) {
+      if ([1, 3, 7, 9].includes(num)) return "green";
+      if ([2, 4, 6, 8].includes(num)) return "red";
+      return "violet";
+    }
+
+    function getSize(num) {
+      return num <= 4 ? "small" : "big";
+    }
+
+    function getPredictedColor(counts) {
+      if (counts.green >= 3) return "red";
+      if (counts.red >= 3) return "violet";
+      if (counts.violet >= 3) return "green";
+      return Object.entries(counts).sort((a, b) => a[1] - b[1])[0][0];
+    }
+
+    function getPredictedSize(counts) {
+      if (counts.big >= 3) return "small";
+      if (counts.small >= 3) return "big";
+      return counts.small < counts.big ? "small" : "big";
+    }
+
+    function getMatchingNumber(color, size) {
+      const colorMap = {
+        green: [1, 3, 7, 9],
+        red: [2, 4, 6, 8],
+        violet: [0, 5]
+      };
+      const sizeMap = {
+        small: [0, 1, 2, 3, 4],
+        big: [5, 6, 7, 8, 9]
+      };
+      const pool = colorMap[color].filter(num => sizeMap[size].includes(num));
+      return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : Math.floor(Math.random() * 10);
+    }
+
+    function handlePrediction() {
+      const input = document.getElementById("inputNumbers").value.trim();
+      const nums = input.split(",").map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n >= 0 && n <= 9);
+
+      if (nums.length !== 5) {
+        alert("Please enter exactly 5 numbers between 0–9.");
+        return;
+      }
+
+      const colorCounts = { green: 0, red: 0, violet: 0 };
+      const sizeCounts = { small: 0, big: 0 };
+
+      nums.forEach(n => {
+        colorCounts[getColor(n)]++;
+        sizeCounts[getSize(n)]++;
+      });
+
+      const color = getPredictedColor(colorCounts);
+      const size = getPredictedSize(sizeCounts);
+      const number = getMatchingNumber(color, size);
+
+      document.getElementById("predColor").textContent = capitalize(color);
+      document.getElementById("predSize").textContent = capitalize(size);
+      document.getElementById("predNumber").textContent = number;
+      document.getElementById("result").classList.remove("hidden");
+
+      const historyEl = document.getElementById("historyList");
+      const newItem = document.createElement("div");
+      newItem.textContent = `Prediction → Color: ${capitalize(color)}, Size: ${capitalize(size)}, Number: ${number}`;
+      historyEl.prepend(newItem);
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  </script>
+</body>
+</html>
