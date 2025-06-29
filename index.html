@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raxx Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles that couldn't be easily achieved with Tailwind */
+        .history-entry:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .dark .history-entry:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Raxx Predictor</h1>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" id="sun-icon"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9 9 0 0012 21a9 9 0 007.354-5.646z" id="moon-icon" class="hidden"/>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 transition-colors duration-300">
+            <!-- Input Section -->
+            <div class="mb-6">
+                <label for="number-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter last 5 numbers (comma-separated):</label>
+                <div class="flex">
+                    <input type="text" id="number-input" 
+                           class="flex-1 rounded-l-md border border-gray-300 dark:border-gray-600 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" 
+                           placeholder="e.g. 1,3,5,2,4" pattern="^(\d,){4}\d$" title="Enter 5 numbers separated by commas (e.g. 1,3,5,2,4)">
+                    <button id="predict-button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md transition-colors">
+                        Predict
+                    </button>
+                </div>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Only numbers 0-9, separated by commas (e.g. 1,3,5,2,4)</p>
+            </div>
+
+            <!-- Prediction Results -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Predicted Color</h3>
+                    <p id="predicted-color" class="text-lg font-semibold dark:text-white">-</p>
+                </div>
+                <div class="p-4 rounded-lg bg-gray-100 dark:bg-gray-700">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Predicted Size</h3>
+                    <p id="predicted-size" class="text-lg font-semibold dark:text-white">-</p>
+                </div>
+                <div class="p-4 rounded-lg bg-blue-50 dark:bg-blue-900">
+                    <h3 class="text-sm font-medium text-blue-600 dark:text-blue-300 mb-1">Suggested Number</h3>
+                    <p id="predicted-number" class="text-xl font-bold text-blue-700 dark:text-blue-200">-</p>
+                </div>
+            </div>
+
+            <!-- Color Legend -->
+            <div class="mb-6">
+                <h2 class="text-lg font-medium text-gray-800 dark:text-white mb-2">Color Legend</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Green: 1,3,7,9</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Red: 2,4,6,8</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full bg-purple-500 mr-2"></div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Violet: 0,5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Size Legend -->
+            <div class="mb-6">
+                <h2 class="text-lg font-medium text-gray-800 dark:text-white mb-2">Size Legend</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-gray-400 mr-2"></div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Small: 0-4</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-gray-800 dark:bg-gray-200 mr-2"></div>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Big: 5-9</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Prediction History -->
+        <section>
+            <h2 class="text-xl font-medium text-gray-800 dark:text-white mb-4">Prediction History</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-colors duration-300">
+                <div class="grid grid-cols-12 bg-gray-100 dark:bg-gray-700 px-4 py-2 font-medium text-sm text-gray-700 dark:text-gray-300">
+                    <div class="col-span-4">Color</div>
+                    <div class="col-span-4">Size</div>
+                    <div class="col-span-4">Number</div>
+                </div>
+                <div id="history-list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- History entries will be added here -->
+                    <div class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                        No predictions yet
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme') || 
+                          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.classList.add(savedTheme);
+        updateThemeIcon(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                updateThemeIcon('light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcon('dark');
+            }
+        });
+
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        // Prediction logic
+        const predictButton = document.getElementById('predict-button');
+        const numberInput = document.getElementById('number-input');
+        const predictedColorEl = document.getElementById('predicted-color');
+        const predictedSizeEl = document.getElementById('predicted-size');
+        const predictedNumberEl = document.getElementById('predicted-number');
+        const historyList = document.getElementById('history-list');
+
+        // Define number properties
+        const numberProperties = {
+            // Color categories
+            colorGroups: {
+                green: [1, 3, 7, 9],
+                red: [2, 4, 6, 8],
+                violet: [0, 5]
+            },
+            
+            // Size categories
+            sizeGroups: {
+                small: [0, 1, 2, 3, 4],
+                big: [5, 6, 7, 8, 9]
+            },
+            
+            // Get color for a number
+            getColor: function(num) {
+                for (const [color, numbers] of Object.entries(this.colorGroups)) {
+                    if (numbers.includes(num)) return color;
+                }
+                return '';
+            },
+            
+            // Get size for a number
+            getSize: function(num) {
+                for (const [size, numbers] of Object.entries(this.sizeGroups)) {
+                    if (numbers.includes(num)) return size;
+                }
+                return '';
+            },
+            
+            // Get opposite color
+            getOppositeColor: function(color) {
+                const colors = Object.keys(this.colorGroups);
+                const currentIndex = colors.indexOf(color);
+                return colors[(currentIndex + 1) % colors.length]; // Rotate through colors
+            },
+            
+            // Get opposite size
+            getOppositeSize: function(size) {
+                return size === 'small' ? 'big' : 'small';
+            },
+            
+            // Get all numbers matching both color and size
+            getMatchingNumbers: function(color, size) {
+                const colorNumbers = this.colorGroups[color] || [];
+                const sizeNumbers = this.sizeGroups[size] || [];
+                return colorNumbers.filter(num => sizeNumbers.includes(num));
+            }
+        };
+
+        // Prediction history
+        let predictionHistory = JSON.parse(localStorage.getItem('predictionHistory')) || [];
+        renderHistory();
+
+        // Main prediction function
+        predictButton.addEventListener('click', () => {
+            const input = numberInput.value.trim();
+            
+            // Validate input
+            if (!/^(\d,){4}\d$/.test(input)) {
+                alert('Please enter 5 numbers separated by commas (e.g. 1,3,5,2,4)');
+                return;
+            }
+            
+            const numbers = input.split(',').map(num => parseInt(num));
+            
+            // Validate numbers are between 0-9
+            if (numbers.some(num => isNaN(num) || num < 0 || num > 9)) {
+                alert('Please enter numbers between 0 and 9');
+                return;
+            }
+            
+            // Analyze the input
+            const counts = analyzeNumbers(numbers);
+            
+            // Make predictions
+            const predictions = makePredictions(counts);
+            
+            // Select a number that matches both color and size
+            const suggestedNumber = selectSuggestedNumber(predictions);
+            
+            // Update UI
+            updatePredictionDisplay(predictions, suggestedNumber);
+            
+            // Save to history
+            saveToHistory(predictions, suggestedNumber);
+        });
+
+        function analyzeNumbers(numbers) {
+            const counts = {
+                colors: {
+                    green: 0,
+                    red: 0,
+                    violet: 0
+                },
+                sizes: {
+                    small: 0,
+                    big: 0
+                }
+            };
+            
+            // Count colors and sizes
+            numbers.forEach(num => {
+                const color = numberProperties.getColor(num);
+                const size = numberProperties.getSize(num);
+                
+                if (color) counts.colors[color]++;
+                if (size) counts.sizes[size]++;
+            });
+            
+            return counts;
+        }
+
+        function makePredictions(counts) {
+            const predictions = {
+                color: null,
+                size: null
+            };
+            
+            // Predict color (using rotated logic)
+            const colors = Object.entries(counts.colors);
+            
+            // Find if any color has 3+ occurrences
+            const dominantColor = colors.find(([_, count]) => count >= 3);
+            if (dominantColor) {
+                predictions.color = numberProperties.getOppositeColor(dominantColor[0]);
+            } else {
+                // Find rarest color (using rotated selection from history)
+                if (predictionHistory.length > 0) {
+                    // Count last few predictions to avoid repeating colors
+                    const recentColors = {};
+                    const historyToCheck = Math.min(3, predictionHistory.length);
+                    for (let i = predictionHistory.length - 1; i >= predictionHistory.length - historyToCheck; i--) {
+                        const entry = predictionHistory[i];
+                        recentColors[entry.color] = (recentColors[entry.color] || 0) + 1;
+                    }
+                    
+                    // Sort by rarity (ascending count) then by original order (descending)
+                    const sortedColors = [...colors].sort((a, b) => {
+                        // First sort by count (ascending)
+                        if (a[1] !== b[1]) return a[1] - b[1];
+                        
+                        // Then sort by recent predictions (ascending)
+                        const aRecent = recentColors[a[0]] || 0;
+                        const bRecent = recentColors[b[0]] || 0;
+                        return aRecent - bRecent;
+                    });
+                    
+                    predictions.color = sortedColors[0][0];
+                } else {
+                    // If no history, just pick the rarest color
+                    predictions.color = [...colors].sort((a, b) => a[1] - b[1])[0][0];
+                }
+            }
+            
+            // Predict size (using rotated logic)
+            const sizes = Object.entries(counts.sizes);
+            
+            // Find if any size has 3+ occurrences
+            const dominantSize = sizes.find(([_, count]) => count >= 3);
+            if (dominantSize) {
+                predictions.size = numberProperties.getOppositeSize(dominantSize[0]);
+            } else {
+                // Find rarest size (using rotated selection from history)
+                if (predictionHistory.length > 0) {
+                    // Count last few predictions to avoid repeating sizes
+                    const recentSizes = {};
+                    const historyToCheck = Math.min(3, predictionHistory.length);
+                    for (let i = predictionHistory.length - 1; i >= predictionHistory.length - historyToCheck; i--) {
+                        const entry = predictionHistory[i];
+                        recentSizes[entry.size] = (recentSizes[entry.size] || 0) + 1;
+                    }
+                    
+                    // Sort by rarity (ascending count) then by original order (descending)
+                    const sortedSizes = [...sizes].sort((a, b) => {
+                        // First sort by count (ascending)
+                        if (a[1] !== b[1]) return a[1] - b[1];
+                        
+                        // Then sort by recent predictions (ascending)
+                        const aRecent = recentSizes[a[0]] || 0;
+                        const bRecent = recentSizes[b[0]] || 0;
+                        return aRecent - bRecent;
+                    });
+                    
+                    predictions.size = sortedSizes[0][0];
+                } else {
+                    // If no history, just pick the rarest size
+                    predictions.size = [...sizes].sort((a, b) => a[1] - b[1])[0][0];
+                }
+            }
+            
+            return predictions;
+        }
+
+        function selectSuggestedNumber(predictions) {
+            // Get all numbers matching both predicted color and size
+            const matchingNumbers = numberProperties.getMatchingNumbers(
+                predictions.color, 
+                predictions.size
+            );
+            
+            if (matchingNumbers.length === 0) {
+                // Shouldn't happen based on our color/size definitions
+                return Math.floor(Math.random() * 10);
+            }
+            
+            // Avoid repeating numbers from recent predictions
+            if (predictionHistory.length > 0) {
+                // Get numbers not suggested in last few predictions
+                const historyToCheck = Math.min(3, predictionHistory.length);
+                const recentNumbers = [];
+                for (let i = predictionHistory.length - 1; i >= predictionHistory.length - historyToCheck; i--) {
+                    recentNumbers.push(predictionHistory[i].number);
+                }
+                
+                const availableNumbers = matchingNumbers.filter(num => !recentNumbers.includes(num));
+                if (availableNumbers.length > 0) {
+                    return availableNumbers[0];
+                }
+            }
+            
+            // If all numbers in category have been used recently, pick one at random
+            return matchingNumbers[Math.floor(Math.random() * matchingNumbers.length)];
+        }
+
+        function updatePredictionDisplay(predictions, suggestedNumber) {
+            predictedColorEl.textContent = capitalizeFirstLetter(predictions.color);
+            predictedColorEl.className = `text-lg font-semibold ${getTextColorClass(predictions.color)}`;
+            
+            predictedSizeEl.textContent = capitalizeFirstLetter(predictions.size);
+            predictedNumberEl.textContent = suggestedNumber;
+        }
+
+        function saveToHistory(predictions, suggestedNumber) {
+            const newEntry = {
+                color: predictions.color,
+                size: predictions.size,
+                number: suggestedNumber,
+                timestamp: new Date().toISOString()
+            };
+            
+            predictionHistory.push(newEntry);
+            localStorage.setItem('predictionHistory', JSON.stringify(predictionHistory));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (predictionHistory.length === 0) {
+                historyList.innerHTML = `
+                    <div class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                        No predictions yet
+                    </div>
+                `;
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            
+            // Reverse to show most recent at top
+            [...predictionHistory].reverse().forEach(entry => {
+                const element = document.createElement('div');
+                element.className = 'grid grid-cols-12 px-4 py-3 history-entry';
+                
+                element.innerHTML = `
+                    <div class="col-span-4 ${getTextColorClass(entry.color)}">${capitalizeFirstLetter(entry.color)}</div>
+                    <div class="col-span-4 dark:text-white">${capitalizeFirstLetter(entry.size)}</div>
+                    <div class="col-span-4 font-medium dark:text-white">${entry.number}</div>
+                `;
+                
+                historyList.appendChild(element);
+            });
+        }
+
+        // Helper functions
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function getTextColorClass(color) {
+            switch(color) {
+                case 'green': return 'text-green-600 dark:text-green-400';
+                case 'red': return 'text-red-600 dark:text-red-400';
+                case 'violet': return 'text-purple-600 dark:text-purple-400';
+                default: return 'dark:text-white';
+            }
+        }
+    </script>
+</body>
+</html>
